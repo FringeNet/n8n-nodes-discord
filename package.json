@@ -11,14 +11,13 @@
 		"n8n-community-node-package"
 	],
 	"license": "MIT",
-	"homepage": "https://github.com/hckdotng/n8n-nodes-discord",
 	"author": {
-		"name": "hckdotng",
-		"url": "https://hck.ng"
+		"name": "FringeNet",
+		"url": "https://www.fringenet.ie"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/hckdotng/n8n-nodes-discord.git"
+		"url": "git+https://github.com/FringeNet/n8n-nodes-discord.git"
 	},
 	"main": "index.js",
 	"scripts": {
