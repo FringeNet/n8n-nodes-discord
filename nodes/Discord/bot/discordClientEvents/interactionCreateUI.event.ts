@@ -32,20 +32,18 @@ export default async function (client: Client) {
             const interactionValues = interaction.isButton()
               ? [interaction.customId]
               : interaction.values;
-            const isEnabled = await triggerWorkflow(
-              trigger.webhookId,
-              null,
-              placeholderMatchingId,
-              state.baseUrl,
-              interaction.user,
-              interaction.channelId,
-              undefined,
-              undefined,
-              undefined,
-              interaction.message.id,
+            const sessionId = `shared-${trigger.webhookId}`;
+            const isEnabled = await triggerWorkflow(trigger.webhookId, {
+              message: null,
+              placeholderId: placeholderMatchingId,
+              baseUrl: state.baseUrl,
+              user: interaction.user,
+              channelId: interaction.channelId,
+              interactionMessageId: interaction.message.id,
               interactionValues,
               userRoles,
-            ).catch((e) => e);
+              sessionId,
+            }).catch((e) => e);
 
             const labels: string[] = [];
 

@@ -13,6 +13,25 @@ export const options: INodeProperties[] = [
     description: `Let you select the text channels you want to listen to for triggering the workflow. If none selected, all channels will be listen to. Your credentials must be set and the bot running, you also need at least one text channel available. If you do not meet these requirements, make the changes then close and reopen the modal (the channels list is loaded when the modal opens).`,
   },
   {
+    displayName: 'Session ID Mode',
+    name: 'sessionIdMode',
+    type: 'options',
+    options: [
+      {
+        name: 'Per Channel',
+        value: 'perChannel',
+        description: 'Generate a unique session ID for each channel (e.g., session-channelId).',
+      },
+      {
+        name: 'Shared',
+        value: 'shared',
+        description: 'Generate a single shared session ID for all triggers from this node (based on webhook ID).',
+      },
+    ],
+    default: 'perChannel',
+    description: 'Choose how the session ID should be generated for the trigger output.',
+  },
+  {
     displayName: 'From roles',
     name: 'roleIds',
     required: false,
@@ -154,6 +173,11 @@ export const options: INodeProperties[] = [
     },
     options: [
       {
+        name: 'Any message',
+        value: 'any',
+        description: 'Trigger on any message, regardless of content.',
+      },
+      {
         name: 'Equals',
         value: 'equal',
         description: 'Match the exact same value.',
@@ -179,7 +203,7 @@ export const options: INodeProperties[] = [
         description: 'Match the custom ECMAScript regex provided.',
       },
     ],
-    default: 'start',
+    default: 'any',
     description: `Select how the value below will be recognized. ⚠ Keep in mind that the value will be tested with all mentions removed and a trim applied (whitespaces removed at the beginning and at the end). For example "@bot hello" will be tested on "hello"`,
   },
   {

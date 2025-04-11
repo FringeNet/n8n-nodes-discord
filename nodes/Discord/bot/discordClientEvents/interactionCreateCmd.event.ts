@@ -40,20 +40,17 @@ export default async function (client: Client) {
                   .reply({ content: `/${interaction.commandName} sent`, ephemeral: true })
                   .catch((e) => e);
 
-                const isEnabled = await triggerWorkflow(
-                  trigger.webhookId,
-                  null,
-                  placeholderMatchingId,
-                  state.baseUrl,
-                  interaction.user,
-                  interaction.channelId,
-                  undefined,
-                  undefined,
-                  undefined,
-                  undefined,
-                  input ? [input] : undefined,
+                const sessionId = `shared-${trigger.webhookId}`;
+                const isEnabled = await triggerWorkflow(trigger.webhookId, {
+                  message: null,
+                  placeholderId: placeholderMatchingId,
+                  baseUrl: state.baseUrl,
+                  user: interaction.user,
+                  channelId: interaction.channelId,
+                  interactionValues: input ? [input] : undefined,
                   userRoles,
-                ).catch((e) => e);
+                  sessionId,
+                }).catch((e) => e);
                 if (isEnabled && trigger.placeholder) {
                   const channel = client.channels.cache.get(interaction.channelId);
                   const placeholder = await (channel as TextChannel)

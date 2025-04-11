@@ -13,7 +13,23 @@ export default async function (client: Client) {
       message.content = message.content.replace(/<@!?\d+>/g, '').trim();
 
       if (state.channels[message.channelId] || state.channels.all) {
-        [...(state.channels[message.channelId] ?? []), ...(state.channels.all ?? [])].forEach(
+        ([...(state.channels[message.channelId] ?? []), ...(state.channels.all ?? [])] as Array<
+          {
+            webhookId: string;
+            roleIds: string[];
+            roleUpdateIds: string[];
+            type: string;
+            pattern?: string;
+            value?: string;
+            name?: string;
+            description?: string;
+            placeholder?: string;
+            caseSensitive?: boolean;
+            botMention?: boolean;
+            sessionIdMode?: 'perChannel' | 'shared'; // Updated type
+            interactionMessageId?: string;
+          }
+        >).forEach(
           async (trigger) => {
             if (trigger.type === 'message') {
               if (trigger.roleIds.length) {
@@ -21,6 +37,35 @@ export default async function (client: Client) {
                 if (!hasRole) return;
               }
               if (trigger.botMention && !botMention) return;
+              if (trigger.pattern === 'any') {
+                addLog(`triggerWorkflow ${trigger.webhookId}`, client);
+                const placeholderMatchingId = trigger.placeholder ? uid() : '';
+                let sessionId: string;
+                if (trigger.sessionIdMode === 'shared') {
+                  sessionId = `shared-${trigger.webhookId}`;
+                } else { // Default to perChannel
+                  sessionId = `session-${message.channelId}`;
+                }
+                const isEnabled = await triggerWorkflow(trigger.webhookId, {
+                  message,
+                  placeholderId: placeholderMatchingId,
+                  baseUrl: state.baseUrl,
+                  sessionId,
+                  userRoles,
+                  // Other optional params are undefined by default
+                }).catch((e) => e);
+                if (isEnabled && trigger.placeholder) {
+                  const channel = client.channels.cache.get(message.channelId);
+                  const placeholder = await (channel as TextChannel)
+                    .send(trigger.placeholder)
+                    .catch((e) => e);
+                  state.promptData[placeholder.id] = {
+                    channelId: message.channelId,
+                    messageId: placeholder.id,
+                  };
+                }
+                return;
+              }
               const escapedTriggerValue = (trigger.value ?? '')
                 .replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
                 .replace(/-/g, '\\x2d');
@@ -33,12 +78,20 @@ export default async function (client: Client) {
               if (reg.test(message.content)) {
                 addLog(`triggerWorkflow ${trigger.webhookId}`, client);
                 const placeholderMatchingId = trigger.placeholder ? uid() : '';
-                const isEnabled = await triggerWorkflow(
-                  trigger.webhookId,
+                let sessionId: string;
+                if (trigger.sessionIdMode === 'shared') {
+                  sessionId = `shared-${trigger.webhookId}`;
+                } else { // Default to perChannel
+                  sessionId = `session-${message.channelId}`;
+                }
+                const isEnabled = await triggerWorkflow(trigger.webhookId, {
                   message,
-                  placeholderMatchingId,
-                  state.baseUrl,
-                ).catch((e) => e);
+                  placeholderId: placeholderMatchingId,
+                  baseUrl: state.baseUrl,
+                  sessionId,
+                  userRoles,
+                  // Other optional params are undefined by default
+                }).catch((e) => e);
                 if (isEnabled && trigger.placeholder) {
                   const channel = client.channels.cache.get(message.channelId);
                   const placeholder = await (channel as TextChannel)

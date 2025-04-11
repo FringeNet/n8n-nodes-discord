@@ -13,14 +13,15 @@ export default async function (client: Client) {
           if (trigger.type === 'userJoins') {
             addLog(`triggerWorkflow ${trigger.webhookId}`, client);
             const placeholderMatchingId = trigger.placeholder ? uid() : '';
-            const isEnabled = await triggerWorkflow(
-              trigger.webhookId,
-              null,
-              placeholderMatchingId,
-              state.baseUrl,
-              member.user,
-              key,
-            ).catch((e) => e);
+            const sessionId = `shared-${trigger.webhookId}`;
+            const isEnabled = await triggerWorkflow(trigger.webhookId, {
+              message: null,
+              placeholderId: placeholderMatchingId,
+              baseUrl: state.baseUrl,
+              user: member.user,
+              channelId: key,
+              sessionId,
+            }).catch((e) => e);
             if (isEnabled && trigger.placeholder) {
               const channel = client.channels.cache.get(key);
               const placeholder = await (channel as TextChannel)
