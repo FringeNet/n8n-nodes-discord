@@ -1,4 +1,4 @@
-import { ITriggerFunctions } from 'n8n-core';
+import { ITriggerFunctions, NodeConnectionType } from 'n8n-workflow';
 import {
   INodeType,
   INodeTypeDescription,
@@ -33,7 +33,7 @@ const nodeDescription: INodeTypeDescription = {
     name: 'Discord Trigger',
   },
   inputs: [],
-  outputs: ['main'],
+  outputs: [NodeConnectionType.Main],
   credentials: [
     {
       name: 'discordApi',
@@ -79,7 +79,7 @@ export class DiscordTrigger implements INodeType {
       let baseUrl = '';
 
       const credentials = (await this.getCredentials('discordApi').catch(
-        (e) => e,
+        (e: unknown) => e,
       )) as any as ICredentials;
       await connection(credentials).catch((e) => e);
 

@@ -1,10 +1,11 @@
 import Ipc from 'node-ipc';
+import { TextChannel, NewsChannel, ThreadChannel } from 'discord.js';
 import {
   Client,
   Channel,
   Message,
   ActionRowBuilder,
-  SelectMenuBuilder,
+  StringSelectMenuBuilder,
   ButtonBuilder,
   MessageEditOptions,
   MessageCreateOptions,
@@ -44,9 +45,17 @@ export default async function (ipc: typeof Ipc, client: Client) {
                 ipc.server.emit(socket, 'send:prompt', state.promptData[message.id]);
                 delete state.promptData[message.id];
                 if (nodeParameters.placeholder) {
-                  const message = await channel
-                    .send({ content: nodeParameters.placeholder })
-                    .catch((e: any) => e);
+                  let message;
+                  if (
+                    channel &&
+                    (channel instanceof TextChannel ||
+                      channel instanceof NewsChannel ||
+                      channel instanceof ThreadChannel)
+                  ) {
+                    message = await channel
+                      .send({ content: nodeParameters.placeholder })
+                      .catch((e: any) => e);
+                  }
                   await execution(
                     nodeParameters.executionId,
                     message.id,
@@ -84,7 +93,7 @@ export default async function (ipc: typeof Ipc, client: Client) {
                     });
                   },
                 );
-                const select = new SelectMenuBuilder()
+                const select = new StringSelectMenuBuilder()
                   .setCustomId('select')
                   .setPlaceholder('...')
                   .setMinValues(nodeParameters.persistent ? nodeParameters.minSelect : 1)
@@ -156,9 +165,16 @@ export default async function (ipc: typeof Ipc, client: Client) {
                     });
                 }
               } else {
-                message = await channel.send(sendObject as MessageCreateOptions).catch((e: any) => {
-                  addLog(`${e}`, client);
-                });
+                if (
+                  channel &&
+                  (channel instanceof TextChannel ||
+                    channel instanceof NewsChannel ||
+                    channel instanceof ThreadChannel)
+                ) {
+                  message = await channel.send(sendObject as MessageCreateOptions).catch((e: any) => {
+                    addLog(`${e}`, client);
+                  });
+                }
               }
 
               if (message && message.id && !nodeParameters.persistent) {

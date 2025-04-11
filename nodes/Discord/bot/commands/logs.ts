@@ -1,4 +1,4 @@
-import { Interaction, SlashCommandBuilder, SlashCommandStringOption } from 'discord.js';
+import { Interaction, SlashCommandBuilder, SlashCommandStringOption, TextChannel, NewsChannel, ThreadChannel } from 'discord.js';
 import state from '../state';
 
 const name = 'logs';
@@ -32,7 +32,14 @@ export default {
 				logs.forEach((log) => {
 					content += '**' + log + '**\n';
 				});
-				interaction.channel?.send(content);
+				if (
+					interaction.channel &&
+					(interaction.channel instanceof TextChannel ||
+					 interaction.channel instanceof NewsChannel ||
+					 interaction.channel instanceof ThreadChannel)
+				) {
+					interaction.channel.send(content);
+				}
 				return 'Logs:';
 			}
 		} else if (['auto', 'stop'].includes(param)) {

@@ -1,4 +1,4 @@
-import { IExecuteFunctions } from 'n8n-core';
+import { IExecuteFunctions, NodeConnectionType } from 'n8n-workflow';
 import {
   INodeExecutionData,
   INodePropertyOptions,
@@ -28,8 +28,8 @@ const nodeDescription: INodeTypeDescription = {
     name: 'Discord Send',
   },
   icon: 'file:discord.svg',
-  inputs: ['main'],
-  outputs: ['main'],
+  inputs: [NodeConnectionType.Main],
+  outputs: [NodeConnectionType.Main],
   credentials: [
     {
       name: 'discordApi',
@@ -138,7 +138,7 @@ export class Discord implements INodeType {
 
     // connection
     const credentials = (await this.getCredentials('discordApi').catch(
-      (e) => e,
+      (e: unknown) => e,
     )) as any as ICredentials;
     await connection(credentials).catch((e) => {
       throw new Error(e);

@@ -6,6 +6,9 @@ import {
   EmbedBuilder,
   ColorResolvable,
   AttachmentBuilder,
+  TextChannel,
+  NewsChannel,
+  ThreadChannel,
 } from 'discord.js';
 import { addLog } from '../helpers';
 import state from '../state';
@@ -165,10 +168,20 @@ export default async function (ipc: typeof Ipc, client: Client) {
                   }
                 }
               }
-              const message = (await channel.send(sendObject).catch((e: any) => {
-                addLog(`${e}`, client);
-              })) as Message;
-              ipc.server.emit(socket, 'send:message', { channelId, messageId: message.id });
+              let message: Message | undefined;
+              if (
+                channel &&
+                (channel instanceof TextChannel ||
+                  channel instanceof NewsChannel ||
+                  channel instanceof ThreadChannel)
+              ) {
+                message = await channel.send(sendObject).catch((e: any) => {
+                  addLog(`${e}`, client);
+                }) as Message;
+              }
+              if (message) {
+                ipc.server.emit(socket, 'send:message', { channelId, messageId: message.id });
+              }
             })
             .catch((e: any) => {
               addLog(`${e}`, client);
