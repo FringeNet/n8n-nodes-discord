@@ -19,6 +19,9 @@
 		"type": "git",
 		"url": "git+https://github.com/FringeNet/n8n-nodes-discord.git"
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"main": "index.js",
 	"scripts": {
 		"build": "tsc && gulp",

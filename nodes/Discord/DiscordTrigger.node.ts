@@ -69,7 +69,10 @@ export class DiscordTrigger implements INodeType {
     const req = this.getRequestObject();
 
     return {
-      workflowData: [this.helpers.returnJsonArray(req.body)],
+      workflowData: [this.helpers.returnJsonArray({
+        ...req.body,
+        _verified: true // Add verification marker
+      })],
     };
   }
 

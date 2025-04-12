@@ -15,7 +15,7 @@ import { registerCommands } from '../commands';
 export default async function (ipc: typeof Ipc, client: Client) {
   let timeout: null | NodeJS.Timeout = null;
 
-  ipc.server.on('trigger', (data: any) => {
+  ipc.server.on('trigger', async (data: any) => {
     try {
       addLog(`trigger ${data.webhookId} update`, client);
       state.triggers[data.webhookId] = data;
@@ -28,8 +28,18 @@ export default async function (ipc: typeof Ipc, client: Client) {
       Object.keys(state.triggers).forEach((webhookId) => {
         const parameters = state.triggers[webhookId];
         // if no chanellIds are specified, listen to all channels using the 'all' key
-        if (!parameters.channelIds || !parameters.channelIds.length)
+        if (!parameters.channelIds || !parameters.channelIds.length) {
           parameters.channelIds = ['all'];
+          // Verify at least one text channel exists
+          // Get all text channels from the client cache
+          const textChannels = Array.from(client.channels.cache.values())
+            .filter((ch: any) => ch.type === 'GUILD_TEXT');
+          
+          if (!textChannels.length) {
+            addLog('No text channels found for "all" trigger', client);
+            return;
+          }
+        }
         parameters.channelIds.forEach((channelId) => {
           if (!state.channels[channelId] && parameters.active)
             state.channels[channelId] = [parameters];
